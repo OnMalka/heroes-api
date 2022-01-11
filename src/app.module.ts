@@ -7,27 +7,19 @@ import configuration from '../config/configuration';
 
 @Module({
   imports: [
-    // ConfigModule.forRoot({
-    //   // envFilePath: 'development.env',
-    //   // load: [configuration],
-    //   // isGlobal: true
-    // }),
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      envFilePath: 'development.env',
+      load: [configuration],
+      isGlobal: true
+    }),
     MongooseModule.forRoot(
-      'mongodb+srv://abudahka:tuiKrvvZ60cmGSF4@cluster0.rhtjb.mongodb.net/heroes-db?retryWrites=true&w=majority',
+      configuration().dbURI,
       {
         useNewUrlParser: true,
         useUnifiedTopology: true,
-        // useCreateIn  dex: true,
+        autoCreate: true
       }
     ),
-    // MongooseModule.forRoot(
-    //   // 'mongodb+srv://abudahka:tuiKrvvZ60cmGSF4@cluster0.rhtjb.mongodb.net/heroes-db?retryWrites=true&w=majority',
-    //   configuration.dbURI,
-    //   {
-    //     useNewUrlParser: true,
-    //     useUnifiedTopology: true
-    //   }),
     TrainerModule,
     HeroModule
   ],

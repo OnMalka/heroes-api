@@ -1,13 +1,19 @@
-import { SuitColors, TrainingSession } from "../schemas/hero.schema";
+import { Trainer } from "src/trainer/schemas/trainer.schema";
 
 export class HeroResponseDto {
     firstTrained?: Date;
     imageURL: string;
-    lastTrainings: TrainingSession[];
+    lastTrainings: {
+        date: Date,
+        percentsGained: number
+    }[];
     currentPower: number;
     startingPower: number;
-    suitColors: SuitColors[];
-    trainer: string;
+    suitColors: {
+        item: string,
+        color: string
+    }[];
+    trainer: Trainer;
     ability: string;
     name: string;
 }

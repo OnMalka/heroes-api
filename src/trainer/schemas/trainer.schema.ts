@@ -1,19 +1,27 @@
-// import { SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
 import * as mongoose from 'mongoose';
+import { Hero } from 'src/hero/schemas/hero.schema';
+import configurations from '../../../config/configuration';
 import * as bcrypt from 'bcrypt';
+import * as jwt from 'jsonwebtoken';
 import validator from 'validator';
+// import axios from 'axios';
 
-// export type TrainerDocument = Trainer & Document;
+export type TrainerDocument = Trainer & Document;
 
-// import * as mongoose from 'mongoose';
-
-export const TrainerSchema = new mongoose.Schema({
-  name: {
+@Schema({
+  timestamps: true
+})
+export class Trainer {
+  @Prop({
     type: String,
     required: true,
     trim: true
-  },
-  email: {
+  })
+  name: string;
+
+  @Prop({
     type: String,
     required: true,
     trim: true,
@@ -26,8 +34,10 @@ export const TrainerSchema = new mongoose.Schema({
           message: 'invalid email'
         };
     }
-  },
-  password: {
+  })
+  email: string;
+
+  @Prop({
     type: String,
     required: true,
     trim: true,
@@ -47,50 +57,49 @@ export const TrainerSchema = new mongoose.Schema({
           message: 'invalid password'
         };
     }
-  },
-  heroes: [
-    {
+  })
+  password: string;
+
+  @Prop({
+    type: [{
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
       ref: 'Hero'
-    }
-  ],
-  tokens: [
-    {
+    }]
+  })
+  heroes: Hero[]
+
+  @Prop({
+    type: [{
       token: {
         type: String,
         required: true
       }
-    }
-  ]
-}, {
-  timestamps: true
-})
+    }]
+  })
+  tokens: { token: string }[]
 
-// TrainerSchema.pre('save', async function (next) {
-//   try {
-//     if (!this.isModified('password')) {
-//       return next();
-//     }
-//     const hashed = await bcrypt.hash(this['password'], 10);
-//     this['password'] = hashed;
-//     return next();
-//   } catch (err) {
-//     return next(err);
-//   }
-// });
+  generateAuthToken: () => string;
 
-// TrainerSchema.pre('save', async function (next) {
-//   const trainer = this;
+  removeToken: () => void;
 
-//   if (trainer.isModified('password'))
-//     trainer.password = await bcrypt.hash(trainer.password, 8);
+  // clearPrivateProps: () => void;
 
-//   next();
-// });
+  // resetLastTrainings: () => void;
 
-// TrainerSchema.statics.findTrainerByEmailAndPassword = async (email, password) => {
-//   const trainer = await Trainer.findOne({ email });
+  // train: () => number;
+}
+
+export const TrainerSchema = SchemaFactory.createForClass(Trainer);
+
+TrainerSchema.pre('save', async function (this: TrainerDocument) {
+  const trainer = this;
+
+  if (trainer.isModified('password'))
+    trainer.password = await bcrypt.hash(trainer.password, 8);
+});
+
+// TrainerSchema.statics.findTrainerByEmailAndPassword = async (email: string, password: string) => {
+//   const trainer = await Trainer.arguments.findOne({ email });
 
 //   if (!trainer)
 //     throw {
@@ -109,118 +118,35 @@ export const TrainerSchema = new mongoose.Schema({
 //   return trainer;
 // };
 
-// TrainerSchema.methods.generateAuthToken = async function () {
-//   const trainer = this;
-//   const token = jwt.sign(
-//     {
-//       _id: trainer._id
-//     },
-//     environments.tokenSecret,
-//     {
-//       expiresIn: "6h"
-//     }
-//   );
+TrainerSchema.methods.generateAuthToken = async function () {
+  const trainer = this;
+  const token = jwt.sign(
+    {
+      _id: trainer._id
+    },
+    configurations().tokenSecret,
+    {
+      expiresIn: "6h"
+    }
+  );
 
-//   trainer.tokens = trainer.tokens.concat({ token });
-//   await trainer.save();
+  trainer.tokens = trainer.tokens.concat({ token });
+  await trainer.save();
 
-//   return token;
-// };
+  return token;
+};
 
-// TrainerSchema.methods.toJSON = function () {
-//   const trainer = this;
-//   const trainerObj = trainer.toObject();
+TrainerSchema.methods.toJSON = function () {
+  const trainer = this._doc;
 
-//   delete trainerObj.password;
-//   delete trainerObj.tokens;
+  delete trainer.password;
+  delete trainer.tokens;
 
-//   return trainerObj;
-// };
+  return trainer;
+};
 
-// TrainerSchema.methods.removeToken = function (token) {
-//   const trainer = this;
-//   trainer.tokens = trainer.tokens.filter((tokenDoc) => tokenDoc.token !== token);
-//   return;
-// };
-
-// TrainerSchema.methods.addHeroes = async function (amountOfHeroesToAdd) {
-//   const getRandomSuitItems = (amountOfItemsToAdd) => {
-//     const allowedItems = ['shoes', 'pants', 'shirt', 'hat', 'cape', 'underwear'];
-//     const suiteItems = [];
-//     for (let i = 0; i < amountOfItemsToAdd; i++) {
-//       const index = Math.round(Math.random() * allowedItems.length - 1);
-//       const item = allowedItems.splice(index, 1)[0];
-//       const color = '#' + (Math.round(Math.random() * 4095)).toString(16);
-//       suiteItems.push({ item, color });
-//     };
-//     return suiteItems;
-//   };
-
-//   for (let i = 0; i < amountOfHeroesToAdd; i++) {
-//     const heroId = await Hero.countDocuments({}) + 1;
-//     const heroData = await axios.get(`https://www.superheroapi.com/api.php/${environments.heroApiToken}/${heroId}`);
-//     const heroObject = heroData.data;
-//     const heroesPower = heroObject.powerstats.power === 'null' ? 10 : heroObject.powerstats.power;
-
-//     const hero = new Hero({
-//       name: heroObject.name,
-//       imageURL: heroObject.image.url,
-//       ability: Math.random() > 0.5 ? 'attacker' : 'defender',
-//       suitColors: getRandomSuitItems(2),
-//       startingPower: heroesPower,
-//       currentPower: heroesPower,
-//       trainer: this._id,
-//       trainings: []
-//     });
-
-//     this.heroes.push(hero._id);
-
-//     await hero.save();
-//   };
-
-//   return;
-// };
-
-// @Schema()
-// export class Trainer {
-//   @Prop({
-//     required: true,
-//     trim: true
-//   })
-//   name: string;
-
-//   @Prop({
-//     required: true,
-//     trim: true,
-//     uppercase: true,
-//     unique: true,
-//     validate(inputValue: string) {
-//       if (!validator.isEmail(inputValue))
-//         throw {
-//           status: 400,
-//           message: 'invalid email'
-//         };
-//     }
-//   })
-//   email: string;
-
-//   @Prop({
-//     type: mongoose.Schema.Types.ObjectId,
-//     ref: 'Trainer'
-//   })
-//   trainer: string;
-
-//   // @Prop({
-//   //   required: true,
-//   //   trim: true
-//   // })
-//   // name: string;
-
-//   @Prop()
-//   age: number;
-
-//   @Prop()
-//   breed: string;
-// }
-
-// export const CatSchema = SchemaFactory.createForClass(Trainer);
+TrainerSchema.methods.removeToken = function (token: string) {
+  const trainer = this._doc;
+  trainer.tokens = trainer.tokens.filter((tokenDoc: { token: string }) => tokenDoc.token !== token);
+  return;
+};

@@ -1,51 +1,23 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import * as mongoose from 'mongoose';
-// import { Trainer } from '../../trainer/schemas/trainer.schema';
 import validator from 'validator';
+import { Trainer } from 'src/trainer/schemas/trainer.schema';
+// import { IHeroDocument } from '../interfaces/IHeroDocument';
 
 export type HeroDocument = Hero & Document;
 
-export class SuitColors {
-    @Prop({
-        required: true,
-        trim: true,
-        enum: ['shoes', 'pants', 'shirt', 'hat', 'cape', 'underwear']
-    })
-    item: string;
-
-    @Prop({
-        required: true,
-        trim: true,
-        validate: (inputValue) => {
-            if (!validator.isHexColor(inputValue))
-                throw new Error(`Invalid color: ${inputValue}`);
-        }
-        // if (!(/^#(?:[0-9a-fA-F]{3}){1,2}$/).test(inputValue.trim()))
-        // did isHexColor with regex and did not want to delete it
-    })
-    color: number;
-}
-
-export class TrainingSession {
-    @Prop({
-        required: true
-    })
-    date: Date;
-
-    @Prop({
-        required: true,
-        min: 0,
-        max: 10
-    })
-    powerGained: number;
-}
+// export interface IHero extends IHeroDocument {
+//     // declare any instance methods here
+//     findTrainerByEmailAndPassword: () => Promise<void>
+// }
 
 @Schema({
     timestamps: true
 })
 export class Hero {
     @Prop({
+        type: String,
         required: true,
         unique: true,
         trim: true
@@ -53,6 +25,7 @@ export class Hero {
     name: string;
 
     @Prop({
+        type: String,
         required: true,
         trim: true,
         enum: ['attacker', 'defender']
@@ -64,15 +37,36 @@ export class Hero {
         ref: 'Trainer',
         required: true
     })
-    trainer: string;
-
-    @Prop()
-    firstTrained: Date;
-
-    @Prop()
-    suitColors: SuitColors[];
+    trainer: Trainer;
 
     @Prop({
+        type: Date
+    })
+    firstTrained: Date;
+
+    @Prop({
+        type: [{
+            item: {
+                type: String,
+                required: true,
+                trim: true,
+                enum: ['shoes', 'pants', 'shirt', 'hat', 'cape', 'underwear']
+            },
+            color: {
+                type: String,
+                required: true,
+                trim: true,
+                validate: (inputValue: string) => {
+                    if (!validator.isHexColor(inputValue))
+                        throw new Error(`Invalid color: ${inputValue}`);
+                }
+            }
+        }]
+    })
+    suitColors: { item: string, color: string }[];
+
+    @Prop({
+        type: Number,
         required: true,
         min: 1,
         default: 10
@@ -80,16 +74,31 @@ export class Hero {
     startingPower: number;
 
     @Prop({
+        type: Number,
         required: true,
         min: 1,
         default: 10
     })
     currentPower: number;
 
-    @Prop()
-    lastTrainings: TrainingSession[];
+    @Prop({
+        type: [{
+            date: {
+                type: Date,
+                required: true
+            },
+            percentsGained: {
+                type: Number,
+                required: true,
+                min: 0,
+                max: 10
+            }
+        }]
+    })
+    lastTrainings: { date: Date, percentsGained: number }[];
 
     @Prop({
+        type: String,
         required: true,
         validate: (inputValue: string) => {
             if (!validator.isURL(inputValue))
@@ -138,13 +147,14 @@ HeroSchema.methods.train = function () {
     if (hero.firstTrained === undefined)
         hero.firstTrained = currentDate;
 
-    const PowerGained = hero.currentPower * (Math.random() * 10) / 100;
+    const randomPercentGain = (Math.random() * 10) / 100;
+    const powerGained = hero.currentPower * randomPercentGain;
 
     hero.startingPower = hero.currentPower;
-    hero.currentPower = (hero.currentPower + PowerGained);
+    hero.currentPower = (hero.currentPower + powerGained);
     hero.lastTrainings.push({
         date: currentDate,
-        PowerGained
+        percentsGained: randomPercentGain
     });
-    return PowerGained;
+    return powerGained;
 };

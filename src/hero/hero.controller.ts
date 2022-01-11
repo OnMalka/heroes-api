@@ -1,21 +1,25 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from '@nestjs/common';
+import { Controller, Post, Patch, Param, Req, UseGuards } from '@nestjs/common';
 import { HeroService } from './hero.service';
-import { CreateHeroDto } from './dto/create-hero.dto';
 import { HeroResponseDto } from './dto/hero-response.dto';
-// import { UpdateHeroDto } from './dto/update-hero.dto';
+import { Schema } from 'mongoose';
+import { RequestInterface } from 'src/interfaces/requestInterface';
+import { AuthGuard } from 'src/auth/authGuard';
 
 @Controller('hero')
+@UseGuards(AuthGuard)
 export class HeroController {
   constructor(private readonly heroService: HeroService) { }
 
   @Post()
-  create(@Body() createHeroDto: CreateHeroDto): Promise<HeroResponseDto> {
-    return this.heroService.create(createHeroDto);
+  create(@Req() request: RequestInterface): Promise<HeroResponseDto> {
+    console.log('request.trainer: ', request.trainer);
+
+    return this.heroService.create(request.trainer._id);
   }
 
   @Patch(':id')
-  train(@Param('id') id: string, @Body('trainer') trainer: string): Promise<number> {
-    return this.heroService.train(id, JSON.parse(trainer)._id);
+  train(@Param('id') id: Schema.Types.ObjectId, @Req() req: RequestInterface): Promise<number> {
+    return this.heroService.train(id, req.trainer._id);
   }
 
   // router.patch('/:id/trainings', trainHero);

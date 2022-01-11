@@ -1,1 +1,1 @@
-export class Hero {}
+export class Hero { }
