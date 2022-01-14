@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { HeroService } from './hero.service';
-import { HeroController } from './hero.controller';
+import { HeroService } from './heroes.service';
+import { HeroController } from './heroes.controller';
 import { Hero, HeroSchema } from './schemas/hero.schema';
-import { Trainer, TrainerSchema } from 'src/trainer/schemas/trainer.schema';
+import { Trainer, TrainerSchema } from 'src/trainers/schemas/trainer.schema';
 
 @Module({
   imports: [

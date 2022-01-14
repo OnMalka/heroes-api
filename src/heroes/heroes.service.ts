@@ -1,19 +1,24 @@
 import { Model, Schema } from 'mongoose';
-import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Hero, HeroDocument } from './schemas/hero.schema';
 import configuration from 'config/configuration';
 import axios from 'axios';
-import { TrainerDocument } from 'src/trainer/schemas/trainer.schema';
+import { TrainerDocument } from 'src/trainers/schemas/trainer.schema';
+import { TrainingResponseDto } from './dto/training-response.dto';
+import { HeroResponseDto } from './dto/hero-response.dto';
+import { PublicHeroResponseDto } from './dto/public-hero-response.dto';
+import { CreateHeroDto } from './dto/create-hero.dto';
+import { TrainHeroDto } from './dto/train-hero.dto';
+import { CreatedHeroDto } from './dto/created-hero.dto';
+import { FindHeroesDto } from './dto/find-heroes.dto';
 
 @Injectable()
 export class HeroService {
   constructor(@InjectModel(Hero.name) private HeroModel: Model<HeroDocument>) { }
 
-  async create(trainerId: Schema.Types.ObjectId): Promise<Hero> {
-
-    console.log('create service');
-
+  async create(createHeroDto: CreateHeroDto): Promise<CreatedHeroDto> {
+    const { trainerId } = createHeroDto;
 
     const getRandomSuitItems = (): { item: string, color: number }[] => {
       const allowedItems = ['shoes', 'pants', 'shirt', 'hat', 'cape', 'underwear'];
@@ -21,7 +26,7 @@ export class HeroService {
       for (let i = 0; i < configuration().suitItemsPerHero; i++) {
         const index = Math.round(Math.random() * allowedItems.length - 1);
         const item = allowedItems.splice(index, 1)[0];
-        const color = '#' + (Math.round(Math.random() * 4095)).toString(16);
+        const color = '#' + (Math.round(Math.random() * 3839) + 256).toString(16);
         suiteItems.push({ item, color });
       };
       return suiteItems;
@@ -45,18 +50,18 @@ export class HeroService {
 
     const createdHero = new this.HeroModel(hero);
 
-    console.log('createdHero: ', createdHero);
-
-
-    return await createdHero.save();
+    await createdHero.save();
+    return createdHero._id;
   }
 
-  async train(_id: Schema.Types.ObjectId, trainer: Schema.Types.ObjectId): Promise<number> {
-    const hero = await this.HeroModel.findOne({ _id, trainer });
+  async train(trainHeroDto: TrainHeroDto): Promise<TrainingResponseDto> {
+    let hero: HeroDocument;
 
-    if (!hero)
-      throw new NotFoundException("Hero not found");
-
+    try {
+      hero = await this.HeroModel.findOne(trainHeroDto);
+    } catch (err) {
+      throw new BadRequestException;
+    };
 
     hero.resetLastTrainings();
 
@@ -64,14 +69,16 @@ export class HeroService {
       throw new HttpException('Hero trained too many times', HttpStatus.TOO_MANY_REQUESTS);
 
 
-    const PowerGained = hero.train();
+    const powerGained = hero.train();
 
     await hero.save();
 
-    return PowerGained;
+    return ({ powerGained });
   }
 
-  async findMy(trainer: TrainerDocument): Promise<Hero[]> {
+  async findMy(findHeroesDto: FindHeroesDto): Promise<HeroResponseDto[]> {
+    const { trainer } = findHeroesDto;
+
     if (trainer.heroes.length === 0)
       return [];
 
@@ -87,7 +94,9 @@ export class HeroService {
     return trainer.heroes;
   };
 
-  async findAll(trainer?: TrainerDocument): Promise<Hero[]> {
+  async findAll(findHeroesDto: FindHeroesDto): Promise<PublicHeroResponseDto[]> {
+    const { trainer } = findHeroesDto;
+
     const heroes = await this.HeroModel.find({}).sort('name');
     if (heroes.length === 0)
       return [];

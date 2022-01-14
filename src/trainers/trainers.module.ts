@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
-import { TrainerService } from './trainer.service';
-import { TrainerController } from './trainer.controller';
-import { HeroModule } from 'src/hero/hero.module';
+import { TrainerService } from './trainers.service';
+import { TrainerController } from './trainers.controller';
+import { HeroModule } from '../heroes/heroes.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Trainer, TrainerSchema } from './schemas/trainer.schema';
+import { AuthGuard } from './authGuard';
 
 @Module({
   imports: [
@@ -14,6 +15,6 @@ import { Trainer, TrainerSchema } from './schemas/trainer.schema';
     HeroModule
   ],
   controllers: [TrainerController],
-  providers: [TrainerService]
+  providers: [TrainerService, AuthGuard]
 })
 export class TrainerModule { }

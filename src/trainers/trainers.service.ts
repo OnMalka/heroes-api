@@ -1,13 +1,15 @@
 import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { HeroService } from 'src/hero/hero.service';
+import { HeroService } from '../heroes/heroes.service';
 import { CreateTrainerDto } from './dto/create-trainer.dto';
-import { UpdateTrainerDto } from './dto/update-trainer.dto';
 import { Trainer, TrainerDocument } from './schemas/trainer.schema';
 import configuration from 'config/configuration';
-import { AuthenticationResponseDto } from 'src/hero/dto/authentication-response.dto';
+import { AuthenticationResponseDto } from './dto/authentication-response.dto';
 import * as bcrypt from 'bcrypt';
+import { LoginTrainerDto } from './dto/login-trainer.dto';
+import { RegainTokenDto } from './dto/regain-token.dto';
+import { AuthRequestInterface } from 'src/interfaces/authRequest.interface';
 
 @Injectable()
 export class TrainerService {
@@ -20,17 +22,18 @@ export class TrainerService {
       throw new HttpException('Trainer already exists', HttpStatus.BAD_REQUEST);
     }
     const createdTrainer = new this.TrainerModel(createTrainerDto);
-    const token = createdTrainer.generateAuthToken();
+    const token = await createdTrainer.generateAuthToken();
     const createdHeroes = [];
     for (let i = 0; i < configuration().heroesPerTrainer; i++) {
       createdHeroes.push(await this.heroService.create(createdTrainer._id))
     }
     createdTrainer.heroes.push(...createdHeroes);
     await createdTrainer.save();
-    return { trainer, token };
+    return { trainer: createdTrainer, token };
   }
 
-  async login(email: string, password: string) {//: Promise<AuthenticationResponseDto> {
+  async login(loginTrainerDto: LoginTrainerDto): Promise<AuthenticationResponseDto> {
+    const { email, password } = loginTrainerDto;
     const trainer = await this.TrainerModel.findOne({ email });
 
     if (!trainer)
@@ -41,20 +44,24 @@ export class TrainerService {
     if (!isPassMatch)
       throw new BadRequestException('Unable to log in');
 
-    const token = trainer.generateAuthToken();
+    const token = await trainer.generateAuthToken();
 
     return ({ trainer, token })
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} trainer`;
+  async logout(authRequestInterface: AuthRequestInterface): Promise<void> {
+    const { trainer, token } = authRequestInterface;
+
+    trainer.removeToken(token);
+    await trainer.save();
+    return;
   }
 
-  update(id: number, updateTrainerDto: UpdateTrainerDto) {
-    return `This action updates a #${id} trainer`;
-  }
+  async regainToken(authRequestInterface: AuthRequestInterface): Promise<RegainTokenDto> {
+    const { trainer, token } = authRequestInterface;
 
-  remove(id: number) {
-    return `This action removes a #${id} trainer`;
+    trainer.removeToken(token);
+    const newToken = await trainer.generateAuthToken();
+    return { token: newToken };
   }
 }

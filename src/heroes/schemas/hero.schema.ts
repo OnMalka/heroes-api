@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import * as mongoose from 'mongoose';
 import validator from 'validator';
-import { Trainer } from 'src/trainer/schemas/trainer.schema';
+import { Trainer } from 'src/trainers/schemas/trainer.schema';
 // import { IHeroDocument } from '../interfaces/IHeroDocument';
 
 export type HeroDocument = Hero & Document;
@@ -128,7 +128,7 @@ HeroSchema.methods.clearPrivateProps = function () {
 };
 
 HeroSchema.methods.resetLastTrainings = function () {
-    const hero = this._doc;
+    const hero = this;
 
     if (
         hero.lastTrainings.length > 0 &&
@@ -141,14 +141,19 @@ HeroSchema.methods.resetLastTrainings = function () {
 };
 
 HeroSchema.methods.train = function () {
-    const hero = this._doc;
+    const hero = this;
     const currentDate = Date.now();
 
     if (hero.firstTrained === undefined)
         hero.firstTrained = currentDate;
 
     const randomPercentGain = (Math.random() * 10) / 100;
+    console.log('randomPercentGain: ', randomPercentGain);
+
     const powerGained = hero.currentPower * randomPercentGain;
+
+    console.log('powerGained: ', powerGained);
+
 
     hero.startingPower = hero.currentPower;
     hero.currentPower = (hero.currentPower + powerGained);

@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import * as mongoose from 'mongoose';
-import { Hero } from 'src/hero/schemas/hero.schema';
+import { Hero } from '../../heroes/schemas/hero.schema';
 import configurations from '../../../config/configuration';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
@@ -78,9 +78,9 @@ export class Trainer {
   })
   tokens: { token: string }[]
 
-  generateAuthToken: () => string;
+  generateAuthToken: () => Promise<string>;
 
-  removeToken: () => void;
+  removeToken: (token: string) => void;
 
   // clearPrivateProps: () => void;
 
@@ -97,26 +97,6 @@ TrainerSchema.pre('save', async function (this: TrainerDocument) {
   if (trainer.isModified('password'))
     trainer.password = await bcrypt.hash(trainer.password, 8);
 });
-
-// TrainerSchema.statics.findTrainerByEmailAndPassword = async (email: string, password: string) => {
-//   const trainer = await Trainer.arguments.findOne({ email });
-
-//   if (!trainer)
-//     throw {
-//       status: 400,
-//       message: 'Unable to log in'
-//     };
-
-//   const isPassMatch = await bcrypt.compare(password, trainer.password);
-
-//   if (!isPassMatch)
-//     throw {
-//       status: 400,
-//       message: 'Unable to log in'
-//     };
-
-//   return trainer;
-// };
 
 TrainerSchema.methods.generateAuthToken = async function () {
   const trainer = this;
@@ -150,3 +130,5 @@ TrainerSchema.methods.removeToken = function (token: string) {
   trainer.tokens = trainer.tokens.filter((tokenDoc: { token: string }) => tokenDoc.token !== token);
   return;
 };
+
+// export const TrainerModel = mongoose.model('Trainer', TrainerSchema);
