@@ -1,4 +1,4 @@
-export default () => ({
+const configurations = () => ({
     port: parseInt(process.env.PORT) || 4000,
     dbURI: process.env.MONGODB_URI,
     tokenSecret: process.env.TOKEN_SECRET,
@@ -6,3 +6,5 @@ export default () => ({
     suitItemsPerHero: parseInt(process.env.SUIT_ITEMS_PER_HERO) || 2,
     heroesPerTrainer: parseInt(process.env.HEROES_PER_TRAINER) || 3
 });
+
+export default configurations;

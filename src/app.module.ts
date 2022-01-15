@@ -9,7 +9,7 @@ import { HeroModule } from './heroes/heroes.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: 'development.env',
+      envFilePath: '.env.development',
       load: [configuration],
       isGlobal: true
     }),
