@@ -2,15 +2,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import * as mongoose from 'mongoose';
 import validator from 'validator';
-import { Trainer } from 'src/trainers/schemas/trainer.schema';
-// import { IHeroDocument } from '../interfaces/IHeroDocument';
 
 export type HeroDocument = Hero & Document;
-
-// export interface IHero extends IHeroDocument {
-//     // declare any instance methods here
-//     findTrainerByEmailAndPassword: () => Promise<void>
-// }
 
 @Schema({
     timestamps: true
@@ -37,7 +30,7 @@ export class Hero {
         ref: 'Trainer',
         required: true
     })
-    trainer: Trainer;
+    trainer: mongoose.Schema.Types.ObjectId;
 
     @Prop({
         type: Date
@@ -87,7 +80,7 @@ export class Hero {
                 type: Date,
                 required: true
             },
-            percentsGained: {
+            powerGained: {
                 type: Number,
                 required: true,
                 min: 0,
@@ -148,18 +141,14 @@ HeroSchema.methods.train = function () {
         hero.firstTrained = currentDate;
 
     const randomPercentGain = (Math.random() * 10) / 100;
-    console.log('randomPercentGain: ', randomPercentGain);
 
     const powerGained = hero.currentPower * randomPercentGain;
-
-    console.log('powerGained: ', powerGained);
-
 
     hero.startingPower = hero.currentPower;
     hero.currentPower = (hero.currentPower + powerGained);
     hero.lastTrainings.push({
         date: currentDate,
-        percentsGained: randomPercentGain
+        powerGained: powerGained
     });
     return powerGained;
 };

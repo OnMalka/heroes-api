@@ -6,7 +6,6 @@ import configurations from '../../../config/configuration';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import validator from 'validator';
-// import axios from 'axios';
 
 export type TrainerDocument = Trainer & Document;
 
@@ -81,12 +80,6 @@ export class Trainer {
   generateAuthToken: () => Promise<string>;
 
   removeToken: (token: string) => void;
-
-  // clearPrivateProps: () => void;
-
-  // resetLastTrainings: () => void;
-
-  // train: () => number;
 }
 
 export const TrainerSchema = SchemaFactory.createForClass(Trainer);
@@ -130,5 +123,3 @@ TrainerSchema.methods.removeToken = function (token: string) {
   trainer.tokens = trainer.tokens.filter((tokenDoc: { token: string }) => tokenDoc.token !== token);
   return;
 };
-
-// export const TrainerModel = mongoose.model('Trainer', TrainerSchema);

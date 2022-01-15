@@ -5,7 +5,7 @@ import { LoggerService } from '../logger/logger.service';
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
-  // constructor() { }
+
   use(req: Request, res: Response, next: NextFunction) {
     const loggerService = new LoggerService(req.url.slice(1).split('/')[0]);
     const tempUrl = req.method + ' ' + req.url.split('?')[0];
@@ -26,22 +26,4 @@ export class LoggerMiddleware implements NestMiddleware {
     });
     next();
   }
-
-  // private loggerService = new LoggerService('http');
-
-  // use(request: Request, response: Response, next: NextFunction): void {
-  //   const { ip, method, path: url } = request;
-  //   const userAgent = request.get('user-agent') || '';
-
-  //   response.on('close', () => {
-  //     const { statusCode } = response;
-  //     const contentLength = response.get('content-length');
-
-  //     this.loggerService.log(
-  //       `${method} ${url} ${statusCode} ${contentLength} - ${userAgent} ${ip}`
-  //     );
-  //   });
-
-  //   next();
-  // }
 }

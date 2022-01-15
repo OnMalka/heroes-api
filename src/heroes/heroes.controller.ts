@@ -1,14 +1,13 @@
-import { Controller, Post, Patch, Param, Req, UseGuards, Get, Query, BadRequestException } from '@nestjs/common';
+import { Controller, Patch, Param, Req, UseGuards, Get, Query, BadRequestException } from '@nestjs/common';
 import { HeroService } from './heroes.service';
 import { HeroResponseDto } from './dto/hero-response.dto';
 import { Schema } from 'mongoose';
 import { AuthGuard } from 'src/trainers/authGuard';
-import { Hero } from './schemas/hero.schema';
 import { AuthRequestInterface } from '../interfaces/authRequest.interface'
 import { PublicHeroResponseDto } from './dto/public-hero-response.dto';
 import { TrainingResponseDto } from './dto/training-response.dto';
 
-@Controller('hero')
+@Controller('heroes')
 @UseGuards(AuthGuard)
 export class HeroController {
   constructor(private readonly heroService: HeroService) { }

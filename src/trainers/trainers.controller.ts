@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Req, HttpCode } from '@nestjs/common';
 import { TrainerService } from './trainers.service';
 import { CreateTrainerDto } from './dto/create-trainer.dto';
 import { AuthGuard } from 'src/trainers/authGuard';

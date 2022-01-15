@@ -1,5 +1,5 @@
 export default () => ({
-    port: parseInt(process.env.PORT) || 3000,
+    port: parseInt(process.env.PORT) || 4000,
     dbURI: process.env.MONGODB_URI,
     tokenSecret: process.env.TOKEN_SECRET,
     heroApiToken: process.env.HERO_API_TOKEN,

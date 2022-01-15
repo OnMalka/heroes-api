@@ -4,7 +4,6 @@ import { TrainerController } from './trainers.controller';
 import { HeroModule } from '../heroes/heroes.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Trainer, TrainerSchema } from './schemas/trainer.schema';
-import { AuthGuard } from './authGuard';
 
 @Module({
   imports: [
@@ -15,6 +14,6 @@ import { AuthGuard } from './authGuard';
     HeroModule
   ],
   controllers: [TrainerController],
-  providers: [TrainerService, AuthGuard]
+  providers: [TrainerService]
 })
 export class TrainerModule { }

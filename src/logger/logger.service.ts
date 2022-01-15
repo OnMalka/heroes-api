@@ -1,6 +1,5 @@
 import { LoggerService as LS } from '@nestjs/common';
 import * as winston from 'winston';
-import * as moment from 'moment';
 
 const { errors, combine, json, timestamp, ms, prettyPrint } = winston.format;
 
@@ -20,13 +19,13 @@ export class LoggerService implements LS {
             transports: [
                 new winston.transports.File({
                     level: 'error',
-                    filename: `error-${moment(new Date()).format('YYYY-MM-DD')}.log`,
+                    filename: `error.log`,
                     dirname: 'logs',
                     maxsize: 5000000,
                 }),
 
                 new winston.transports.File({
-                    filename: `application-${moment(new Date()).format('YYYY-MM-DD')}.log`,
+                    filename: `application.log`,
                     dirname: 'logs',
                     maxsize: 5000000,
                 }),

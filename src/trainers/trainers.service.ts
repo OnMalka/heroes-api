@@ -23,6 +23,7 @@ export class TrainerService {
     }
     const createdTrainer = new this.TrainerModel(createTrainerDto);
     const token = await createdTrainer.generateAuthToken();
+
     const createdHeroes = [];
     for (let i = 0; i < configuration().heroesPerTrainer; i++) {
       createdHeroes.push(await this.heroService.create(createdTrainer._id))

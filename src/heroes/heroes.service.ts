@@ -4,7 +4,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Hero, HeroDocument } from './schemas/hero.schema';
 import configuration from 'config/configuration';
 import axios from 'axios';
-import { TrainerDocument } from 'src/trainers/schemas/trainer.schema';
 import { TrainingResponseDto } from './dto/training-response.dto';
 import { HeroResponseDto } from './dto/hero-response.dto';
 import { PublicHeroResponseDto } from './dto/public-hero-response.dto';
@@ -18,7 +17,6 @@ export class HeroService {
   constructor(@InjectModel(Hero.name) private HeroModel: Model<HeroDocument>) { }
 
   async create(createHeroDto: CreateHeroDto): Promise<CreatedHeroDto> {
-    const { trainerId } = createHeroDto;
 
     const getRandomSuitItems = (): { item: string, color: number }[] => {
       const allowedItems = ['shoes', 'pants', 'shirt', 'hat', 'cape', 'underwear'];
@@ -44,7 +42,7 @@ export class HeroService {
       suitColors: getRandomSuitItems(),
       startingPower: sampleHeroesPower,
       currentPower: sampleHeroesPower,
-      trainer: trainerId,
+      trainer: createHeroDto,
       trainings: []
     };
 
@@ -66,7 +64,7 @@ export class HeroService {
     hero.resetLastTrainings();
 
     if (hero.lastTrainings.length > 4)
-      throw new HttpException('Hero trained too many times', HttpStatus.TOO_MANY_REQUESTS);
+      throw new HttpException('Hero trained too many times', HttpStatus.METHOD_NOT_ALLOWED);
 
 
     const powerGained = hero.train();
@@ -104,7 +102,7 @@ export class HeroService {
     const formattedHeroes = [];
 
     for (let hero of heroes) {
-      if (!trainer || hero.trainer !== trainer._id) {
+      if (hero.trainer.toString() !== trainer._id.toString()) {
         hero.clearPrivateProps();
       } else {
         hero.resetLastTrainings();

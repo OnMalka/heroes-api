@@ -1,4 +1,4 @@
-import { Trainer } from "src/trainers/schemas/trainer.schema";
+import { Schema } from "mongoose";
 
 export class HeroResponseDto {
     readonly firstTrained?: Date;
@@ -13,7 +13,7 @@ export class HeroResponseDto {
         readonly item: string,
         readonly color: string
     }[];
-    readonly trainer: Trainer;
+    readonly trainer: Schema.Types.ObjectId;
     readonly ability: string;
     readonly name: string;
 }
